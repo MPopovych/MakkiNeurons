@@ -6,15 +6,23 @@ import com.makki.suppliers.ZeroSupplier;
 
 public class BrainLayer {
 
+    private final int height;
+    private final int width;
     float[][] values;
-    private int height;
-    private int width;
+    float[][] bias = null;
 
     public BrainLayer(int height, int width) {
-        this(height, width, ZeroSupplier.INSTANCE);
+        this(height, width, ZeroSupplier.INSTANCE, false);
     }
 
-    public BrainLayer(int height, int width, ValueSupplier supplier) {
+    public BrainLayer(int height, int width, boolean biased) {
+        this(height, width, ZeroSupplier.INSTANCE, biased);
+    }
+
+    public BrainLayer(int height, int width, ValueSupplier supplier){
+        this(height, width, supplier, false);
+    }
+    public BrainLayer(int height, int width, ValueSupplier supplier, boolean biased) {
         this.height = height;
         this.width = width;
 
@@ -25,9 +33,22 @@ public class BrainLayer {
                 values[y][x] = supplier.supply(y, x);
             }
         }
+        if (biased) {
+            bias = new float[height][];
+            for (int y = 0; y < height; y++) {
+                bias[y] = new float[width];
+                for (int x = 0; x < width; x++) {
+                    bias[y][x] = supplier.supply(y, x);
+                }
+            }
+        }
     }
 
     public BrainLayer(int height, int width, float[] source) {
+        this(height, width, source, false);
+    }
+
+    public BrainLayer(int height, int width, float[] source, boolean biased) {
         this.height = height;
         this.width = width;
 
@@ -35,6 +56,13 @@ public class BrainLayer {
         for (int y = 0; y < height; y++) {
             values[y] = new float[width];
             System.arraycopy(source, y * width, values[y], 0, width);
+        }
+        if (biased) {
+            bias = new float[height][];
+            for (int y = 0; y < height; y++) {
+                bias[y] = new float[width];
+                System.arraycopy(source, y * width, bias[y], 0, width);
+            }
         }
     }
 
@@ -56,6 +84,23 @@ public class BrainLayer {
         }
     }
 
+    public void setToZeroes() {
+        for (int y = 0; y < values.length; y++) {
+            for (int x = 0; x < values[0].length; x++) {
+                values[y][x] = 0;
+            }
+        }
+    }
+
+    public void setToBias() {
+        if (bias == null) {
+            return;
+        }
+        for (int y = 0; y < values.length; y++) {
+            System.arraycopy(bias[y], 0, values[y], 0, values[0].length);
+        }
+    }
+
     public void multiply(float[][] target, float[][] destination) {
         int thisRows = values.length;
         int thisColumns = values[0].length;
@@ -64,12 +109,6 @@ public class BrainLayer {
 
         if (thisColumns != targetRows) {
             throw new IllegalArgumentException("CONFLICT OF " + thisColumns + " TARGET " + targetRows + ".");
-        }
-
-        for (int y = 0; y < destination.length; y++) {
-            for (int x = 0; x < destination[0].length; x++) {
-                destination[y][x] = 0;
-            }
         }
 
         for (int i = 0; i < thisRows; i++) { // aRow

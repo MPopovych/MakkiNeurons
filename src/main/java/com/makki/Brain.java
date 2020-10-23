@@ -47,12 +47,15 @@ public class Brain {
     }
 
     void append(int count) {
+        append(count, false);
+    }
+    void append(int count, boolean biased) {
         layerCount++;
 
         BrainLayer weightLayer = null;
         if (brainLayers.length > 0) {
             BrainLayer layer = brainLayers[brainLayers.length - 1];
-            weightLayer = new BrainLayer(layer.getWidth(), count, supplier);
+            weightLayer = new BrainLayer(layer.getWidth(), count, supplier, biased);
         }
 
         BrainLayer nextLayer = new BrainLayer(1, count);
@@ -121,6 +124,11 @@ public class Brain {
             }
 
             BrainLayer target = brainLayers[weight + 1];
+            if (weight + 1 == brainLayers.length || target.bias == null) {
+                target.setToZeroes();
+            } else {
+                target.setToBias();
+            }
             brainLayers[layer].multiply(brainLayers[weight], target);
 
             for (int j = 0; j < target.getWidth(); j++) {

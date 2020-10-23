@@ -7,8 +7,8 @@ import org.junit.Test;
 
 public class BrainBreedingTest {
 
-	private int mutationPercent = 6;
-	private int mutationDivider = 2;
+	private final int mutationPercent = 6;
+	private final int mutationDivider = 2;
 
 	@Test
 	public void testBreeding() {

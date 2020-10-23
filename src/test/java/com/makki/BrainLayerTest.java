@@ -9,9 +9,10 @@ public class BrainLayerTest {
         long start = System.currentTimeMillis();
         BrainLayer a = new BrainLayer(3, 3, new float[]{1, 1, 1, 2, 2, 2, 3, 3, 3});
         BrainLayer b = new BrainLayer(3, 3, new float[]{1, 1, 1, 2, 2, 2, 3, 3, 3});
-        BrainLayer c = new BrainLayer(3, 3);
+        BrainLayer c = new BrainLayer(3, 3, false);
 
         for (int i = 0; i < 4000000; i++) {
+            c.setToZeroes();
             a.multiply(b, c);
         }
 
@@ -29,6 +30,7 @@ public class BrainLayerTest {
             BrainLayer b = new BrainLayer(2, 1, new float[]{2f, 2f});
             BrainLayer c = new BrainLayer(3, 1);
 
+            c.setToZeroes();
             a.multiply(b, c);
         }
 
@@ -46,6 +48,7 @@ public class BrainLayerTest {
             BrainLayer b = new BrainLayer(3, 3, new float[]{5f, 4f, 6f, 1f, 7f, 7f, 5f, 4f, 6f});
             BrainLayer c = new BrainLayer(1, 3);
 
+            c.setToZeroes();
             a.multiply(b, c);
         }
 
