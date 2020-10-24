@@ -3,7 +3,7 @@ package com.makki;
 import com.makki.functions.ReLuFunction;
 import com.makki.suppliers.RandomRangeSupplier;
 import com.makki.suppliers.RandomSupplier;
-import com.makki.suppliers.StaticValueSupplier;
+import com.makki.suppliers.SingleValueSupplier;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -143,10 +143,10 @@ public class BrainTest {
                 .addLayer(2);
 
         Brain brain1 = brainBuilder
-                .setSupplier(new StaticValueSupplier(3))
+                .setSupplier(new SingleValueSupplier(3))
                 .build();
         Brain brain2 = brainBuilder
-                .setSupplier(new StaticValueSupplier(4))
+                .setSupplier(new SingleValueSupplier(4))
                 .build();
 
         int[] struct1 = brain1.getStructure();

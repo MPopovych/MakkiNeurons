@@ -16,13 +16,9 @@ public class BenchmarkTest {
         ValueSupplier supplier = RandomRangeSupplier.INSTANCE;
 
         Brain brain = new Brain(function, supplier);
-        brain.append(4, true);
-        brain.append(60, true);
-        brain.append(60, true);
-        brain.append(60, true);
-        brain.append(60, true);
-        brain.append(60, true);
-        brain.append(60, true);
+        brain.append(4, false);
+        brain.append(600, false);
+        brain.append(600, false);
         brain.append(2);
 
         float[] input1 = new float[]{0, 0, 0, 0};
@@ -34,7 +30,7 @@ public class BenchmarkTest {
         float[] output = new float[]{0, 0};
 
         long start = System.currentTimeMillis();
-        for (int i = 0; i < 100000; i++) {
+        for (int i = 0; i < 10000; i++) {
             testBrain(brain, input1, output);
             testBrain(brain, input2, output);
             testBrain(brain, input3, output);

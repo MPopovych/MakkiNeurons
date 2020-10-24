@@ -6,7 +6,7 @@ public class RandomRangeSupplier implements ValueSupplier {
 
     public static final RandomRangeSupplier INSTANCE = new RandomRangeSupplier(new Random(System.currentTimeMillis()));
 
-    private Random random;
+    private final Random random;
 
     public RandomRangeSupplier(Random random) {
         this.random = random;

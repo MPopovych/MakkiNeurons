@@ -1,10 +1,10 @@
 package com.makki.suppliers;
 
-public class StaticValueSupplier implements ValueSupplier {
+public class SingleValueSupplier implements ValueSupplier {
 
-    private float value;
+    private final float value;
 
-    public StaticValueSupplier(float value) {
+    public SingleValueSupplier(float value) {
         this.value = value;
     }
 
