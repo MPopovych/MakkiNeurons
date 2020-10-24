@@ -28,11 +28,11 @@ public class BrainBreedingTest {
 			BrainLayer parentLayer1 = source1.getWeightLayer(i);
 			BrainLayer parentLayer2 = source2.getWeightLayer(i);
 
-			for (int y = 0; y < layer.getHeight(); y++) {
-				for (int x = 0; x < layer.getWidth(); x++) {
-					float value = layer.getValue(y, x);
-					float parent1Value = parentLayer1.getValue(y, x);
-					float parent2Value = parentLayer2.getValue(y, x);
+			for (int x = 0; x < layer.getWidth(); x++) {
+				for (int y = 0; y < layer.getHeight(); y++) {
+					float value = layer.getValue(x, y);
+					float parent1Value = parentLayer1.getValue(x, y);
+					float parent2Value = parentLayer2.getValue(x, y);
 					if (value != parent1Value && value != parent2Value) {
 						Assert.fail("MISMATCH in layer: " + i + " with pos -> x: " + x + " y: " + y
 								+ " value: " + value + " p1: " + parent1Value + " p2: " + parent2Value);
@@ -63,12 +63,12 @@ public class BrainBreedingTest {
 			BrainLayer parentLayer1 = source1.getWeightLayer(i);
 			BrainLayer parentLayer2 = source2.getWeightLayer(i);
 
-			for (int y = 0; y < layer.getHeight(); y++) {
-				for (int x = 0; x < layer.getWidth(); x++) {
+			for (int x = 0; x < layer.getWidth(); x++) {
+				for (int y = 0; y < layer.getHeight(); y++) {
 					totalCount++;
-					float value = layer.getValue(y, x);
-					float parent1Value = parentLayer1.getValue(y, x);
-					float parent2Value = parentLayer2.getValue(y, x);
+					float value = layer.getValue(x, y);
+					float parent1Value = parentLayer1.getValue(x, y);
+					float parent2Value = parentLayer2.getValue(x, y);
 					if (value != parent1Value && value != parent2Value) {
 						mutatedCount++;
 					}
@@ -98,10 +98,10 @@ public class BrainBreedingTest {
 			BrainLayer layer = child.getWeightLayer(i);
 			BrainLayer parentLayer1 = source1.getWeightLayer(i);
 
-			for (int y = 0; y < layer.getHeight(); y++) {
-				for (int x = 0; x < layer.getWidth(); x++) {
-					float value = layer.getValue(y, x);
-					if (value != parentLayer1.getValue(y, x)) {
+			for (int x = 0; x < layer.getWidth(); x++) {
+				for (int y = 0; y < layer.getHeight(); y++) {
+					float value = layer.getValue(x, y);
+					if (value != parentLayer1.getValue(x, y)) {
 						Assert.fail("MISMATCH in layer: " + i + " with pos -> x:" + x + " y:" + y);
 					}
 				}
@@ -128,11 +128,11 @@ public class BrainBreedingTest {
 			BrainLayer layer = child.getWeightLayer(i);
 			BrainLayer parentLayer1 = source1.getWeightLayer(i);
 
-			for (int y = 0; y < layer.getHeight(); y++) {
-				for (int x = 0; x < layer.getWidth(); x++) {
+			for (int x = 0; x < layer.getWidth(); x++) {
+				for (int y = 0; y < layer.getHeight(); y++) {
 					totalCount++;
-					float value = layer.getValue(y, x);
-					if (value != parentLayer1.getValue(y, x)) {
+					float value = layer.getValue(x, y);
+					if (value != parentLayer1.getValue(x, y)) {
 						mutatedCount++;
 					}
 				}

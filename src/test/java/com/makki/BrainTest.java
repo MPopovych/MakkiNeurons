@@ -97,7 +97,7 @@ public class BrainTest {
 
         long end = System.currentTimeMillis();
 
-        System.out.println("Elapsed time: " + (end - start));
+        System.out.println("[testConsistency] Elapsed time: " + (end - start));
     }
 
     @Test
@@ -119,17 +119,17 @@ public class BrainTest {
         for (int i = 0; i < 10; i++) {
             brain.setInput(RandomSupplier.INSTANCE);
             float[] result = brain.calculate();
-
-            System.out.print("result " + i + "--- ");
-            for (float v : result) {
-                System.out.print(v + " ");
-            }
-            System.out.println(" --- end result");
+//
+//            System.out.print("result " + i + "--- ");
+//            for (float v : result) {
+//                System.out.print(v + " ");
+//            }
+//            System.out.println(" --- end result");
         }
 
         long end = System.currentTimeMillis();
 
-        System.out.println("Elapsed time: " + (end - start));
+        System.out.println("[testSpeed] Elapsed time: " + (end - start));
     }
 
     @Test
@@ -177,7 +177,7 @@ public class BrainTest {
 
         long end = System.currentTimeMillis();
 
-        System.out.println("Elapsed time: " + (end - start));
+        System.out.println("[testMerge] Elapsed time: " + (end - start));
     }
 
     @Test
@@ -240,6 +240,6 @@ public class BrainTest {
 
         long end = System.currentTimeMillis();
 
-        System.out.println("Elapsed time: " + (end - start));
+        System.out.println("[testValueMerge] Elapsed time: " + (end - start));
     }
 }

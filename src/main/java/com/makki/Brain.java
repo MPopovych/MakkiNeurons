@@ -2,6 +2,7 @@ package com.makki;
 
 import com.makki.functions.BrainFunction;
 import com.makki.suppliers.ValueSupplier;
+import com.makki.suppliers.ZeroSupplier;
 
 public class Brain {
 
@@ -9,7 +10,7 @@ public class Brain {
     private int layerCount = 0;
 
     private BrainFunction function;
-    private ValueSupplier supplier;
+    private final ValueSupplier supplier;
     private BrainLayer[] brainLayers = new BrainLayer[0];
 
     Brain(BrainFunction function, ValueSupplier supplier) {
@@ -47,18 +48,18 @@ public class Brain {
     }
 
     void append(int count) {
-        append(count, false);
+        append(count, null);
     }
-    void append(int count, boolean biased) {
+    void append(int count, ValueSupplier bSupplier) {
         layerCount++;
 
         BrainLayer weightLayer = null;
         if (brainLayers.length > 0) {
             BrainLayer layer = brainLayers[brainLayers.length - 1];
-            weightLayer = new BrainLayer(layer.getWidth(), count, supplier, biased);
+            weightLayer = new BrainLayer(count, layer.getWidth(), supplier); // weight layer
         }
 
-        BrainLayer nextLayer = new BrainLayer(1, count);
+        BrainLayer nextLayer = new BrainLayer(count, 1, null, bSupplier); // hidden layer
 
         int newSize = brainLayers.length + 1 + (weightLayer == null ? 0 : 1);
 
@@ -89,9 +90,7 @@ public class Brain {
             throw new IllegalStateException("MISMATCH OF NODE: " + first.getNodeCount() + " INPUT: " + values.length);
         }
 
-        if (first.getWidth() >= 0) {
-            System.arraycopy(values, 0, first.values[0], 0, first.getWidth());
-        }
+        first.setValues(values);
     }
 
     public void setInput(ValueSupplier supplier) {
@@ -100,7 +99,7 @@ public class Brain {
         }
 
         BrainLayer first = brainLayers[0];
-        for (int i = 0; i < first.getWidth(); i++) {
+        for (int i = 0; i < first.getHeight(); i++) {
             first.values[0][i] = supplier.supply(0, i);
         }
     }
@@ -132,13 +131,15 @@ public class Brain {
             brainLayers[layer].multiply(brainLayers[weight], target);
 
             for (int j = 0; j < target.getWidth(); j++) {
-                target.values[0][j] = function.apply(target.values[0][j]);
+                target.values[j][0] = function.apply(target.values[j][0]);
             }
         }
 
         BrainLayer last = brainLayers[weight + 1];
+        for (int i = 0; i < outDest.length; i++) {
+            outDest[i] = last.values[i][0];
+        }
 
-        System.arraycopy(last.values[0], 0, outDest, 0, outDest.length);
         return outDest;
     }
 

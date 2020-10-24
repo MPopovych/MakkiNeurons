@@ -9,7 +9,7 @@ public class ZeroSupplier extends SingleValueSupplier {
     }
 
     @Override
-    public float supply(int y, int x) {
+    public float supply(int x, int y) {
         return 0f;
     }
 }

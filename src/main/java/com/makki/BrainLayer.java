@@ -6,118 +6,97 @@ import com.makki.suppliers.ZeroSupplier;
 
 public class BrainLayer {
 
-    private final int height;
     private final int width;
+    private final int height;
     float[][] values;
     float[][] bias = null;
 
-    public BrainLayer(int height, int width) {
-        this(height, width, ZeroSupplier.INSTANCE, false);
+    public BrainLayer(int width, int height) {
+        this(width, height, ZeroSupplier.INSTANCE, null);
     }
 
-    public BrainLayer(int height, int width, boolean biased) {
-        this(height, width, ZeroSupplier.INSTANCE, biased);
+    public BrainLayer(int width, int height, boolean biased) {
+        this(width, height, ZeroSupplier.INSTANCE, null);
     }
 
-    public BrainLayer(int height, int width, ValueSupplier supplier){
-        this(height, width, supplier, false);
+    public BrainLayer(int width, int height, ValueSupplier supplier){
+        this(width, height, supplier, null);
     }
-    public BrainLayer(int height, int width, ValueSupplier supplier, boolean biased) {
-        this.height = height;
+    public BrainLayer(int width, int height, ValueSupplier supplier, ValueSupplier bSupplier) {
         this.width = width;
+        this.height = height;
 
-        values = new float[height][];
-        for (int y = 0; y < height; y++) {
-            values[y] = new float[width];
+        if (supplier != null) {
+            values = new float[width][];
             for (int x = 0; x < width; x++) {
-                values[y][x] = supplier.supply(y, x);
+                values[x] = new float[height];
+                for (int y = 0; y < height; y++) {
+                    values[x][y] = supplier.supply(x, y);
+                }
+            }
+        } else {
+            values = new float[width][];
+            for (int x = 0; x < width; x++) {
+                values[x] = new float[height];
             }
         }
-        if (biased) {
-            bias = new float[height][];
-            for (int y = 0; y < height; y++) {
-                bias[y] = new float[width];
-                for (int x = 0; x < width; x++) {
-                    bias[y][x] = supplier.supply(y, x);
+
+        if (bSupplier != null) {
+            bias = new float[width][];
+            for (int x = 0; x < width; x++) {
+                bias[x] = new float[height];
+                for (int y = 0; y < height; y++) {
+                    bias[x][y] = bSupplier.supply(x, y);;
                 }
             }
         }
     }
 
-    public BrainLayer(int height, int width, float[] source) {
-        this(height, width, source, false);
+    public BrainLayer(int width, int height, float[] source) {
+        this(width, height, source, null);
     }
 
-    public BrainLayer(int height, int width, float[] source, boolean biased) {
-        this.height = height;
+    public BrainLayer(int width, int height, float[] source, float[] bSource) {
         this.width = width;
+        this.height = height;
 
-        values = new float[height][];
-        for (int y = 0; y < height; y++) {
-            values[y] = new float[width];
-            System.arraycopy(source, y * width, values[y], 0, width);
-        }
-        if (biased) {
-            bias = new float[height][];
+        values = new float[width][];
+        for (int x = 0; x < width; x++) {
+            values[x] = new float[height];
             for (int y = 0; y < height; y++) {
-                bias[y] = new float[width];
-                System.arraycopy(source, y * width, bias[y], 0, width);
+                values[x][y] = source[x * height + y];
             }
         }
-    }
-
-    public void setValues(ValueSupplier supplier) {
-        values = new float[height][];
-        for (int y = 0; y < height; y++) {
-            values[y] = new float[width];
+        if (bSource != null) {
+            bias = new float[width][];
             for (int x = 0; x < width; x++) {
-                values[y][x] = supplier.supply(y, x);
+                bias[x] = new float[height];
+                for (int y = 0; y < height; y++) {
+                    bias[x][y] = bSource[x * height + y];
+                }
             }
-        }
-    }
-
-    public void setValues(float[] source) {
-        values = new float[height][];
-        for (int y = 0; y < height; y++) {
-            values[y] = new float[width];
-            System.arraycopy(source, y * width, values[y], 0, width);
-        }
-    }
-
-    public void setToZeroes() {
-        for (int y = 0; y < values.length; y++) {
-            for (int x = 0; x < values[0].length; x++) {
-                values[y][x] = 0;
-            }
-        }
-    }
-
-    public void setToBias() {
-        if (bias == null) {
-            return;
-        }
-        for (int y = 0; y < values.length; y++) {
-            System.arraycopy(bias[y], 0, values[y], 0, values[0].length);
         }
     }
 
     public void multiply(float[][] target, float[][] destination) {
-        int thisRows = values.length;
-        int thisColumns = values[0].length;
-        int targetRows = target.length;
-        int targetColumns = target[0].length;
+        //Column major implementation, ijk algorithm
+        int thisX = values.length; //right, number of columns
+        int thisY = values[0].length; // down, number of rows
+        int targetX = target.length;
+        int targetY = target[0].length;
 
-        if (thisColumns != targetRows) {
-            throw new IllegalArgumentException("CONFLICT OF " + thisColumns + " TARGET " + targetRows + ".");
+        if (thisX != targetY) {
+            throw new IllegalArgumentException("CONFLICT OF " + thisX + " TARGET " + targetY + ".");
         }
 
-        for (int i = 0; i < thisRows; i++) { // aRow
-            for (int j = 0; j < targetColumns; j++) { // bColumn
-                float value = destination[i][j];
-                for (int k = 0; k < thisColumns; k++) { // aColumn
-                    value += values[i][k] * target[k][j];
+        float value;
+        for (int i = 0; i < thisY; i++) {
+            for (int j = 0; j < targetX; j++) {
+                value = destination[j][i];
+                for (int k = 0; k < thisX; k++) {
+                    value += values[k][i] * target[j][k];
                 }
-                destination[i][j] = value;
+                destination[j][i] = value;
             }
         }
     }
@@ -126,20 +105,81 @@ public class BrainLayer {
         multiply(target.values, destination.values);
     }
 
-    public float getValue(int y, int x) {
-        return values[y][x];
+    void setValue(int x, int y, float value) {
+        values[x][y] = value;
     }
 
-    public int getHeight() {
-        return height;
+    void setValue(int x, int y, ValueSupplier supplier) {
+        values[x][y] = supplier.supply(x, y);
+    }
+
+    public float getValue(int x, int y) {
+        return values[x][y];
+    }
+
+    public void setValues(ValueSupplier supplier) {
+        for (int x = 0; x < values.length; x++) {
+            for (int y = 0; y < values[0].length; y++) {
+                values[x][y] = supplier.supply(x, y);
+            }
+        }
+    }
+
+    public void setValues(float[] source) {
+        for (int x = 0; x < values.length; x++) {
+            for (int y = 0; y < values[0].length; y++) {
+                values[x][y] = source[x * height + y];
+            }
+        }
+    }
+
+    public void setToZeroes() {
+        for (int x = 0; x < values.length; x++) {
+            for (int y = 0; y < values[0].length; y++) {
+                values[x][y] = 0;
+            }
+        }
+    }
+
+    public void setToBias() {
+        if (bias == null) {
+            return;
+        }
+        for (int x = 0; x < values.length; x++) {
+            for (int y = 0; y < values[0].length; y++) {
+                values[x][y] = bias[x][y];
+            }
+        }
+    }
+
+    public float getBiasValue(int x, int y) {
+        if (bias == null) {
+            return 0;
+        }
+        return bias[x][y];
+    }
+
+    public void setBiasValue(int x, int y, float value) {
+        if (bias == null) {
+            return;
+        }
+        bias[x][y] = value;
+    }
+
+    public boolean isBiased() {
+        return bias != null;
     }
 
     public int getWidth() {
         return width;
     }
 
+    public int getHeight() {
+        return height;
+    }
+
     public int getNodeCount() {
-        return height * width;
+        return width * height;
     }
 
     public void print() {
@@ -151,7 +191,4 @@ public class BrainLayer {
         }
     }
 
-    void setSingleValue(int y, int x, ValueSupplier supplier) {
-        values[y][x] = supplier.supply(y, x);
-    }
 }

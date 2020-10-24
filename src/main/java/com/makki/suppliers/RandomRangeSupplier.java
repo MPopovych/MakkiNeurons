@@ -13,7 +13,7 @@ public class RandomRangeSupplier implements ValueSupplier {
     }
 
     @Override
-    public float supply(int y, int x) {
+    public float supply(int x, int y) {
         return random.nextFloat() * 2 - 1;
     }
 }

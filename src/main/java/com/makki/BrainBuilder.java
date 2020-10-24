@@ -144,9 +144,9 @@ public class BrainBuilder {
 			BrainLayer parentLayer1 = parent1.getWeightLayer(i);
 			layer.setValues(new SimpleLayerMerger(parentLayer1));
 
-			for (int y = 0; y < layer.getHeight(); y++) {
-				if (layer.getWidth() >= 0) {
-					System.arraycopy(parentLayer1.values[y], 0, layer.values[y], 0, layer.getWidth());
+			for (int x = 0; x < layer.getWidth(); x++) {
+				for (int y = 0; y < layer.getHeight(); y++) {
+					layer.values[x][y] = parentLayer1.values[x][y];
 				}
 			}
 		}
@@ -172,9 +172,9 @@ public class BrainBuilder {
 			count = Math.max(count, 1) / Math.max(mutationDivider, 1);
 
 			for (int j = 0; j < count; j++) {
-				int y = random.nextInt(layer.getHeight());
 				int x = random.nextInt(layer.getWidth());
-				layer.setSingleValue(y, x, supplier);
+				int y = random.nextInt(layer.getHeight());
+				layer.setValue(x, y, supplier);
 			}
 		}
 	}
@@ -191,11 +191,11 @@ public class BrainBuilder {
 		}
 
 		@Override
-		public float supply(int y, int x) {
+		public float supply(int x, int y) {
 			if (random.nextBoolean()) {
-				return parentLayer2.values[y][x];
+				return parentLayer2.values[x][y];
 			}
-			return parentLayer1.values[y][x];
+			return parentLayer1.values[x][y];
 		}
 	}
 
@@ -213,23 +213,23 @@ public class BrainBuilder {
 		}
 
 		@Override
-		public float supply(int y, int x) {
+		public float supply(int x, int y) {
 			if (crossCount == 0) {
 				crossCount = random.nextInt(Math.max(parentLayer1.getNodeCount() / 4, 1)) * (random.nextBoolean() ? 1 : -1);
 			}
 
 			if (crossCount > 0) {
 				crossCount--;
-				return parentLayer1.values[y][x];
+				return parentLayer1.values[x][y];
 			} else if (crossCount < 0) {
 				crossCount++;
-				return parentLayer2.values[y][x];
+				return parentLayer2.values[x][y];
 			}
 
 			if (random.nextBoolean()) {
-				return parentLayer2.values[y][x];
+				return parentLayer2.values[x][y];
 			}
-			return parentLayer1.values[y][x];
+			return parentLayer1.values[x][y];
 		}
 	}
 
@@ -241,8 +241,8 @@ public class BrainBuilder {
 		}
 
 		@Override
-		public float supply(int y, int x) {
-			return parentLayer1.values[y][x];
+		public float supply(int x, int y) {
+			return parentLayer1.values[x][y];
 		}
 	}
 

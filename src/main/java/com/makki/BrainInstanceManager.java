@@ -27,9 +27,9 @@ public class BrainInstanceManager {
 
             buff.putInt(count); //WEIGHT COUNT
 
-            for (int y = 0; y < layer.getHeight(); y++) {
-                for (int x = 0; x < layer.getWidth(); x++) {
-                    buff.putFloat(layer.getValue(y, x)); //WEIGHT VALUES
+            for (int x = 0; x < layer.getWidth(); x++) {
+                for (int y = 0; y < layer.getHeight(); y++) {
+                    buff.putFloat(layer.getValue(x, y)); //WEIGHT VALUES
                 }
             }
         }
