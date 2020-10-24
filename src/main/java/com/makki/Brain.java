@@ -32,11 +32,11 @@ public class Brain {
     }
 
     public BrainLayer getLayer(int index) {
-        return brainLayers[(index + 1) / 2];
+        return brainLayers[index * 2];
     }
 
     public int getLayerCount() {
-        return (brainLayers.length + 1) / 2;
+        return layerCount;
     }
 
     public int getWeightLayerCount() {
@@ -118,7 +118,11 @@ public class Brain {
             weight = layer + 1;
 
             if (debug) {
+                System.out.println("Layer " + i + " values");
                 brainLayers[layer].print();
+                System.out.println("Layer " + i + " biases");
+                brainLayers[layer].printBias();
+                System.out.println("Layer " + i + " weights");
                 brainLayers[weight].print();
             }
 

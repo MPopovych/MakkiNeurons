@@ -11,6 +11,7 @@ import java.util.Random;
 public class BrainBuilder {
 
 	private int[] structure;
+	private ValueSupplier[] bias_structure;
 
 	private BrainFunction function = new ReLuFunction();
 	private ValueSupplier supplier = RandomRangeSupplier.INSTANCE;
@@ -19,6 +20,7 @@ public class BrainBuilder {
 
 	private BrainBuilder() {
 		structure = new int[0];
+		bias_structure = new ValueSupplier[0];
 	}
 
 	public static BrainBuilder builder() {
@@ -26,17 +28,40 @@ public class BrainBuilder {
 	}
 
 	public BrainBuilder addLayer(int count) {
+		return addLayer(count, null);
+	}
+
+	public BrainBuilder addLayer(int count, ValueSupplier biasSupplier) {
 		int newSize = structure.length + 1;
+
+		// STRUCTURE
 		int[] oldArray = structure;
 		structure = new int[newSize];
-
 		System.arraycopy(oldArray, 0, structure, 0, oldArray.length);
 		structure[newSize - 1] = count;
+
+		// BIASES
+		ValueSupplier[] oldBiasArray = bias_structure;
+		bias_structure = new ValueSupplier[newSize];
+		System.arraycopy(oldBiasArray, 0, bias_structure, 0, oldBiasArray.length);
+		bias_structure[newSize - 1] = biasSupplier;
+
 		return this;
 	}
 
 	public BrainBuilder setStructure(int[] structure) {
 		this.structure = structure;
+		if (structure.length != bias_structure.length) {
+			this.setBiasStructure(new ValueSupplier[structure.length]);
+		}
+		return this;
+	}
+
+	public BrainBuilder setBiasStructure(ValueSupplier[] structure) {
+		this.bias_structure = structure;
+		if (this.structure.length != bias_structure.length) {
+			throw new IllegalStateException("Mismatch in bias structure");
+		}
 		return this;
 	}
 
@@ -53,6 +78,7 @@ public class BrainBuilder {
 	public BrainBuilder branchDestination(Brain destination) {
 		BrainBuilder branch = new DestinationBuilder(destination);
 		branch.setStructure(this.structure);
+		branch.setBiasStructure(this.bias_structure);
 		branch.setFunction(this.function);
 		branch.setSupplier(this.supplier);
 		return branch;
@@ -64,9 +90,12 @@ public class BrainBuilder {
 
 	private Brain build(ValueSupplier supplier) {
 		Brain brain = new Brain(this.function, supplier);
-		for (int count : structure) {
-			brain.append(count);
+		for (int i = 0; i < structure.length; i++) {
+			int count = structure[i];
+			ValueSupplier biasSupplier = bias_structure[i];
+			brain.append(count, biasSupplier);
 		}
+
 		return brain;
 	}
 
