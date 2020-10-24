@@ -113,9 +113,11 @@ public class BrainLayer {
 
         for (int i = 0; i < thisRows; i++) { // aRow
             for (int j = 0; j < targetColumns; j++) { // bColumn
+                float value = destination[i][j];
                 for (int k = 0; k < thisColumns; k++) { // aColumn
-                    destination[i][j] += values[i][k] * target[k][j];
+                    value += values[i][k] * target[k][j];
                 }
+                destination[i][j] = value;
             }
         }
     }

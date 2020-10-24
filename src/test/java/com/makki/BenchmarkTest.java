@@ -7,6 +7,7 @@ import com.makki.suppliers.ValueSupplier;
 import org.junit.Test;
 
 public class BenchmarkTest {
+
     @Test
     public void test() {
         //these test results will be compared to C++ counterpart
@@ -16,6 +17,9 @@ public class BenchmarkTest {
 
         Brain brain = new Brain(function, supplier);
         brain.append(4, true);
+        brain.append(60, true);
+        brain.append(60, true);
+        brain.append(60, true);
         brain.append(60, true);
         brain.append(60, true);
         brain.append(60, true);

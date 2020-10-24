@@ -89,8 +89,8 @@ public class Brain {
             throw new IllegalStateException("MISMATCH OF NODE: " + first.getNodeCount() + " INPUT: " + values.length);
         }
 
-        for (int i = 0; i < first.getWidth(); i++) {
-            first.values[0][i] = values[i];
+        if (first.getWidth() >= 0) {
+            System.arraycopy(values, 0, first.values[0], 0, first.getWidth());
         }
     }
 
@@ -138,9 +138,7 @@ public class Brain {
 
         BrainLayer last = brainLayers[weight + 1];
 
-        for (int i = 0; i < outDest.length; i++) {
-            outDest[i] = last.values[0][i];
-        }
+        System.arraycopy(last.values[0], 0, outDest, 0, outDest.length);
         return outDest;
     }
 
