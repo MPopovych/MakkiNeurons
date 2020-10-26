@@ -166,6 +166,31 @@ public class BrainLayer {
         bias[x][y] = value;
     }
 
+    public void setBiasValue(int x, int y, ValueSupplier supplier) {
+        if (bias == null) {
+            return;
+        }
+        bias[x][y] = supplier.supply(x, y);
+    }
+
+    public void setBiasValues(ValueSupplier supplier) {
+        if (bias == null) {
+            bias = new float[width][];
+            for (int x = 0; x < width; x++) {
+                bias[x] = new float[height];
+                for (int y = 0; y < height; y++) {
+                    bias[x][y] = supplier.supply(x, y);
+                }
+            }
+            return;
+        }
+        for (int x = 0; x < bias.length; x++) {
+            for (int y = 0; y < bias[0].length; y++) {
+                bias[x][y] = supplier.supply(x, y);
+            }
+        }
+    }
+
     public void setBiasValues(float[] source) {
         if (bias == null) {
             bias = new float[width][];

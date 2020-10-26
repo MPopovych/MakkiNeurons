@@ -9,7 +9,34 @@ import org.junit.Test;
 public class BenchmarkTest {
 
     @Test
-    public void test() {
+    public void testRealisticLoad() {
+        //these test results will be compared to C++ counterpart
+
+        BrainFunction function = new LeakyReLuFunction();
+        ValueSupplier supplier = RandomRangeSupplier.INSTANCE;
+
+        Brain brain = new Brain(function, supplier);
+        brain.append(100);
+        brain.append(150, supplier);
+        brain.append(200, supplier);
+        brain.append(40, supplier);
+        brain.append(45);
+
+        float[] input1 = new float[100];
+        float[] output = new float[45];
+
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < 100000; i++) {
+            testBrain(brain, input1, output);
+        }
+
+        long end = System.currentTimeMillis();
+
+        System.out.println("[testRealisticLoad] Elapsed time: " + (end - start) + "ms.");
+    }
+
+    @Test
+    public void testCompareJava() {
         //these test results will be compared to C++ counterpart
 
         BrainFunction function = new LeakyReLuFunction();
@@ -17,6 +44,7 @@ public class BenchmarkTest {
 
         Brain brain = new Brain(function, supplier);
         brain.append(4);
+        brain.append(8000, supplier);
         brain.append(8000, supplier);
         brain.append(8000, supplier);
         brain.append(2);
@@ -40,7 +68,7 @@ public class BenchmarkTest {
         }
         long end = System.currentTimeMillis();
 
-        System.out.println("Elapsed time: " + (end - start) + "ms.");
+        System.out.println("[testCompareJava] Elapsed time: " + (end - start) + "ms.");
     }
 
     private void testBrain(Brain brain, float[] input, float[] output) {
