@@ -119,7 +119,6 @@ public class BrainInstanceManager {
                 values[i] = buff.getFloat(); // BIAS VALUES
             }
 
-            System.out.println("SAVING " + biasCount + " BIASES for " + layerIndex);
             if (values.length > 0) {
                 layer.setBiasValues(values);
             }
