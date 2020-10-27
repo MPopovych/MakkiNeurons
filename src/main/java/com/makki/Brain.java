@@ -50,6 +50,7 @@ public class Brain {
     void append(int count) {
         append(count, null);
     }
+
     void append(int count, ValueSupplier bSupplier) {
         layerCount++;
 
