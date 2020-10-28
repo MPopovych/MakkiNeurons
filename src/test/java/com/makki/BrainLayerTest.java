@@ -3,6 +3,8 @@ package com.makki;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Random;
+
 public class BrainLayerTest {
 
     @Test
@@ -20,11 +22,45 @@ public class BrainLayerTest {
         for (int i = 0; i < output.length; i++) {
             Assert.assertEquals(c.getValue(i, 0), output[i], 0.0);
         }
+        c.print();
 
         long end = System.currentTimeMillis();
 
         System.out.println("[testOutput1] Elapsed time: " + (end - start) + "ms");
     }
+
+    @Test
+    public void testOutput2() {
+        long start = System.currentTimeMillis();
+        Random random = new Random(start);
+
+        float[] input = new float[5];
+
+        BrainLayer a = new BrainLayer(5, 1);
+        BrainLayer b = new BrainLayer(5, 5, new float[]{-1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0,-1, 0, 0, 0, 0, 0,-1, 0, 0, 0, 0, 0,-1, 0});
+        BrainLayer c = new BrainLayer(5, 1);
+        for (int j = 0; j < 20; j ++) {
+            for (int i = 0; i < input.length; i++) {
+                input[i] = random.nextInt(3) - 1;
+            }
+
+            a.setValues(input);
+            c.setToZeroes();
+            a.multiply(b, c);
+
+            for (int i = 0; i < c.getNodeCount(); i++) {
+                Assert.assertEquals(c.getValue(i, 0), input[i] * -1, 0.0);
+            }
+        }
+
+        a.print();
+        c.print();
+
+        long end = System.currentTimeMillis();
+
+        System.out.println("[testOutput2] Elapsed time: " + (end - start) + "ms");
+    }
+
 
     @Test
     public void performanceTest1() {

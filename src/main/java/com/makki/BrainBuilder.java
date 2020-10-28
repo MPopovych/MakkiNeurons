@@ -103,6 +103,61 @@ public class BrainBuilder {
 		return build(ZeroSupplier.INSTANCE);
 	}
 
+	public Brain produceChildUnsafe(Brain parent1, Brain parent2) {
+		Brain child = createNewOrFromExtension();
+		child.setFunction(parent2.getFunction());
+
+		for (int i = 0; i < child.getWeightLayerCount(); i++) {
+			BrainLayer layer = child.getWeightLayer(i);
+			BrainLayer parentLayer1 = parent1.getWeightLayer(i);
+			BrainLayer parentLayer2 = parent2.getWeightLayer(i);
+			for (int x = 0; x < layer.getWidth(); x++) {
+				for (int y = 0; y < layer.getHeight(); y++) {
+					if (random.nextBoolean()) {
+						layer.values[x][y] = parentLayer2.values[x][y];
+					}
+					layer.values[x][y] = parentLayer1.values[x][y];
+				}
+			}
+		}
+
+		for (int i = 0; i < child.getLayerCount(); i++) {
+			BrainLayer layer = child.getLayer(i);
+			BrainLayer parentLayer1 = parent1.getLayer(i);
+			BrainLayer parentLayer2 = parent2.getLayer(i);
+
+			if (parentLayer1.isBiased() && parentLayer2.isBiased()) {
+				layer.createBiasZeroed();
+				for (int x = 0; x < layer.getWidth(); x++) {
+					for (int y = 0; y < layer.getHeight(); y++) {
+						if (random.nextBoolean()) {
+							layer.bias[x][y] = parentLayer2.bias[x][y];
+						}
+						layer.bias[x][y] = parentLayer1.bias[x][y];
+					}
+				}
+			} else {
+				BrainLayer oneBiased = parentLayer1.isBiased() ? parentLayer1 : (parentLayer2.isBiased() ? parentLayer2 : null);
+
+				if (oneBiased == null) {
+					continue;
+				}
+				for (int x = 0; x < layer.getWidth(); x++) {
+					for (int y = 0; y < layer.getHeight(); y++) {
+						layer.bias[x][y] = oneBiased.bias[x][y];
+					}
+				}
+			}
+		}
+
+		return child;
+	}
+
+	public Brain produceChildUnsafe(Brain parent1, Brain parent2, int mutationPercent, int mutationDivider) {
+		Brain child = produceChildUnsafe(parent1, parent2);
+		return mutate(child, mutationPercent, mutationDivider);
+	}
+
 	public Brain produceChild(Brain parent1, Brain parent2) {
 		//match signature
 		int[] sign1 = parent1.getStructure();
@@ -174,11 +229,7 @@ public class BrainBuilder {
 						layer.bias[x][y] = oneBiased.bias[x][y];
 					}
 				}
-
 			}
-
-
-
 		}
 
 		return child;
@@ -186,8 +237,7 @@ public class BrainBuilder {
 
 	public Brain produceChild(Brain parent1, Brain parent2, int mutationPercent, int mutationDivider) {
 		Brain child = produceChild(parent1, parent2);
-		mutate(child, mutationPercent, mutationDivider);
-		return child;
+		return mutate(child, mutationPercent, mutationDivider);
 	}
 
 	public Brain copy(Brain parent1) {
@@ -242,16 +292,16 @@ public class BrainBuilder {
 		return child;
 	}
 
-	private void mutate(Brain brain, int mutationPercent, int mutationDivider) {
-		if (mutationPercent == 0) return;
+	public Brain mutate(Brain brain, int mutationPercent, int mutationDivider) {
+		if (mutationPercent == 0) return brain;
 		if (mutationDivider == 0) {
 			mutationDivider = 1;
 		}
 
 		for (int i = 0; i < brain.getWeightLayerCount(); i++) {
 			BrainLayer layer = brain.getWeightLayer(i);
-			int count = layer.getNodeCount() * mutationPercent / 100;
-			count = Math.max(count, 1) / Math.max(mutationDivider, 1);
+			int count = (layer.getNodeCount() * mutationPercent / Math.max(mutationDivider, 1)) / 100;
+			count = Math.max(count, 1);
 
 			for (int j = 0; j < count; j++) {
 				int x = random.nextInt(layer.getWidth());
@@ -266,8 +316,8 @@ public class BrainBuilder {
 				continue;
 			}
 
-			int count = layer.getNodeCount() * mutationPercent / 100;
-			count = Math.max(count, 1) / Math.max(mutationDivider, 1);
+			int count = (layer.getNodeCount() * mutationPercent / mutationDivider) / 100;
+			count = Math.max(count, 1);
 
 			for (int j = 0; j < count; j++) {
 				int x = random.nextInt(layer.getWidth());
@@ -275,54 +325,7 @@ public class BrainBuilder {
 				layer.bias[x][y] = supplier.supply(x, y);
 			}
 		}
-	}
-
-	private static class LayerBiasMerger implements ValueSupplier {
-		private final Random random = new Random(System.currentTimeMillis());
-
-		private final BrainLayer parentLayer1;
-		private final BrainLayer parentLayer2;
-		private boolean parent1_isBiased = false;
-		private boolean parent2_isBiased = false;
-
-		LayerBiasMerger(BrainLayer parentLayer1, BrainLayer parentLayer2) {
-			this.parentLayer1 = parentLayer1;
-			this.parentLayer2 = parentLayer2;
-
-			parent1_isBiased = parentLayer1.isBiased();
-			parent2_isBiased = parentLayer2.isBiased();
-		}
-
-		@Override
-		public float supply(int x, int y) {
-			if (random.nextBoolean()) {
-				if (!parent2_isBiased) return 0;
-
-				return parentLayer2.bias[x][y];
-			}
-			if (!parent1_isBiased) return 0;
-			return parentLayer1.bias[x][y];
-		}
-	}
-
-	private static class LayerMerger implements ValueSupplier {
-		private final Random random = new Random(System.currentTimeMillis());
-
-		private final BrainLayer parentLayer1;
-		private final BrainLayer parentLayer2;
-
-		LayerMerger(BrainLayer parentLayer1, BrainLayer parentLayer2) {
-			this.parentLayer1 = parentLayer1;
-			this.parentLayer2 = parentLayer2;
-		}
-
-		@Override
-		public float supply(int x, int y) {
-			if (random.nextBoolean()) {
-				return parentLayer2.values[x][y];
-			}
-			return parentLayer1.values[x][y];
-		}
+		return brain;
 	}
 
 	private static class DestinationBuilder extends BrainBuilder {

@@ -231,9 +231,9 @@ public class BrainLayer {
     }
 
     public void print() {
-        for (float[] value : values) {
-            for (float v : value) {
-                System.out.print(v + " ");
+        for (int y = 0; y < values[0].length; y++) {
+            for (int x = 0; x < values.length; x++) {
+                System.out.print(values[x][y] + " ");
             }
             System.out.println();
         }
@@ -243,9 +243,9 @@ public class BrainLayer {
         if (bias == null) {
             return;
         }
-        for (float[] value : bias) {
-            for (float v : value) {
-                System.out.print(v + " ");
+        for (int y = 0; y < bias[0].length; y++) {
+            for (int x = 0; x < bias.length; x++) {
+                System.out.print(bias[x][y] + " ");
             }
             System.out.println();
         }

@@ -1,56 +1,69 @@
 package com.makki;
 
 import com.makki.functions.Functions;
+import com.makki.suppliers.RandomNegPosSupplier;
+import com.makki.suppliers.RandomNegZeroPosSupplier;
 import com.makki.suppliers.RandomRangeSupplier;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Random;
 
 public class BrainTrainingTest {
 
-    private static final int BRAIN_COUNT = 6;
-    private static final int IO_COUNT = 90;
+    private static final int REVERSE_BRAIN_COUNT = 10;
+    private static final int REVERSE_IO_COUNT = 4;
+    private static final int REVERSE_L2_COUNT = REVERSE_IO_COUNT;
+    private static final int REVERSE_L3_COUNT = REVERSE_IO_COUNT;
+    private static final int REVERSE_L4_COUNT = REVERSE_IO_COUNT;
+    private static final int REVERSE_TEST_COUNT = 1;
 
+    /**
+     * This test is just a brute force test
+     */
     @Test
-    public void test() {
-        int testCount = 1;
+    public void testReverse() {
+        int testCount = REVERSE_TEST_COUNT;
         long total = 0;
 
         long start = System.currentTimeMillis();
         for (int i = 0; i < testCount; i++) {
-            total += testOnce();
+            total += testReverseOnce();
         }
         long end = System.currentTimeMillis();
-        System.out.println("[BrainTrainingTest] Elapsed time: " + total / testCount + "ms.");
-        System.out.println("[testRealisticLoad] Elapsed time: " + (end - start) + "ms.");
-
+        System.out.println("[testReverseOnce] Avg time: " + total / testCount + "ms.");
+        System.out.println("[testReverse] Elapsed time: " + (end - start) + "ms.");
     }
 
-    public long testOnce() {
-        Brain[] brainPool = new Brain[BRAIN_COUNT];
-        int[] brainResults = new int[BRAIN_COUNT];
+    public long testReverseOnce() {
+        Random random = new Random(System.currentTimeMillis());
+        Brain[] brainPool = new Brain[REVERSE_BRAIN_COUNT];
+        int[] brainResults = new int[REVERSE_BRAIN_COUNT];
 
         BrainBuilder template = BrainBuilder.builder()
-                .setFunction(Functions.NegPos)
-                .addLayer(IO_COUNT)
-                .addLayer(20, RandomRangeSupplier.INSTANCE)
-                .addLayer(20)
-                .addLayer(20, RandomRangeSupplier.INSTANCE)
-                .addLayer(10)
-                .addLayer(IO_COUNT);
+                .setFunction(Functions.NegZeroPos)
+                .addLayer(REVERSE_IO_COUNT)
+                .addLayer(REVERSE_L2_COUNT, RandomNegZeroPosSupplier.INSTANCE)
+                .addLayer(REVERSE_L3_COUNT, RandomNegZeroPosSupplier.INSTANCE)
+                .addLayer(REVERSE_L4_COUNT)
+                .addLayer(REVERSE_IO_COUNT);
 
         for (int i = 0; i < brainPool.length; i++) {
             brainPool[i] = template.build();
         }
 
-        float[] input = new float[IO_COUNT];
-        Arrays.fill(input, -1f);
+        float[] input = new float[REVERSE_IO_COUNT];
+        for (int i = 0; i < input.length; i++) {
+            input[i] = random.nextBoolean() ? -1f : 1f;
+        }
+        System.out.println("INPUT ---- " + Arrays.toString(input));
 
-        float[] output = new float[IO_COUNT];
+        float[] output = new float[REVERSE_IO_COUNT];
         int bestGlobalResult = 0;
 
         long start = System.currentTimeMillis();
-        while (bestGlobalResult < IO_COUNT) {
+        long iteration = 0;
+        while (bestGlobalResult < REVERSE_IO_COUNT) {
             //iterate brains and get results
             for (int b = 0; b < brainPool.length; b++) {
                 Brain brain = brainPool[b];
@@ -58,8 +71,8 @@ public class BrainTrainingTest {
                 brain.calculate(output);
 
                 int matched = 0;
-                for (float v : output) {
-                    if (v == 1f) {
+                for (int r = 0; r < input.length; r++) {
+                    if (input[r] == output[r] * -1) {
                         matched++;
                     }
                 }
@@ -68,6 +81,7 @@ public class BrainTrainingTest {
 
             //find 1 best result
             int bestIndex = 0;
+            int secondBestIndex = 0;
             int bestResult = 0;
             for (int b = 0; b < brainResults.length; b++) {
                 if (brainResults[b] > bestResult) {
@@ -76,23 +90,179 @@ public class BrainTrainingTest {
                     if (bestResult > bestGlobalResult) {
                         bestGlobalResult = bestResult;
                     }
+                } else if (brainResults[b] == bestResult) {
+                    secondBestIndex = b;
                 }
             }
-            if (bestGlobalResult == IO_COUNT) break;
+            if (bestGlobalResult == REVERSE_IO_COUNT) break;
 
             Brain bestBrain = brainPool[bestIndex];
             int lastNotBest = 0;
             for (int b = 0; b < brainPool.length; b++) {
-                if (bestIndex == b) continue;
+                if (bestIndex == b) {
+                    continue;
+                }
 
                 template.branchDestination(brainPool[b])
-                        .copy(bestBrain, IO_COUNT, bestGlobalResult); //the closer to the goal - the less mutation
+                        .copy(bestBrain, REVERSE_IO_COUNT, bestGlobalResult); //the closer to the goal - the less mutation
 //                        .copy(bestBrain, 3, 4);
-                lastNotBest = b;
+                if (secondBestIndex != b) {
+                    lastNotBest = b;
+                }
             }
-            //this one to ensure a good start, so called fresh blood
+
+            // this one to ensure a good start with low mutation, so called fresh blood
             brainPool[lastNotBest] = template.build();
-            System.out.println("[test iterate] Best so far: " + bestGlobalResult);
+            if (iteration % 5000 == 0) {
+                System.out.println("[test iterate] Best so far: " + bestGlobalResult + " best now: " + bestResult);
+            }
+            iteration++;
+        }
+        long end = System.currentTimeMillis();
+        return (end - start);
+    }
+
+    @Test
+    public void testReverseDataSet() {
+        int testCount = REVERSE_TEST_COUNT;
+        long total = 0;
+
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < testCount; i++) {
+            total += testReverseDataSetOnce();
+        }
+        long end = System.currentTimeMillis();
+        System.out.println("[testReverseOnce] Avg time: " + total / testCount + "ms.");
+        System.out.println("[testReverse] Elapsed time: " + (end - start) + "ms.");
+    }
+
+    public long testReverseDataSetOnce() {
+        Random random = new Random(System.currentTimeMillis());
+        Brain[] brainPool = new Brain[REVERSE_BRAIN_COUNT];
+        Brain[] cache1 = new Brain[REVERSE_BRAIN_COUNT];
+        Brain[] cache2 = new Brain[REVERSE_BRAIN_COUNT];
+
+        int[] brainResults = new int[REVERSE_BRAIN_COUNT];
+
+        BrainBuilder template = BrainBuilder.builder()
+                .setSupplier(RandomNegZeroPosSupplier.INSTANCE)
+                .setFunction(Functions.NegZeroPos)
+                .addLayer(REVERSE_IO_COUNT)
+//                .addLayer(REVERSE_L2_COUNT, RandomRangeSupplier.INSTANCE)
+//                .addLayer(REVERSE_L3_COUNT, RandomRangeSupplier.INSTANCE)
+//                .addLayer(REVERSE_L4_COUNT)
+                .addLayer(REVERSE_IO_COUNT);
+
+        for (int i = 0; i < brainPool.length; i++) {
+            cache1[i] = template.build();
+            cache2[i] = template.build();
+        }
+
+        brainPool = cache1;
+
+        float[] input = new float[REVERSE_IO_COUNT];
+        float[] negatedInput = new float[REVERSE_IO_COUNT];
+        for (int i = 0; i < input.length; i++) {
+            input[i] = random.nextBoolean() ? -1f : 1f;
+            negatedInput[i] = input[i] * -1;
+        }
+
+        System.out.println("INPUT  ---- " + Arrays.toString(input));
+        System.out.println("INPUT REVERSE ---- " + Arrays.toString(negatedInput));
+
+        float[] output = new float[REVERSE_IO_COUNT];
+        float bestGlobalResult = 0;
+
+        int validationRepeat = 50;
+        long start = System.currentTimeMillis();
+        long iteration = 0;
+        float resultSum = 0;
+        while (bestGlobalResult < REVERSE_IO_COUNT) {
+            //clear previous
+            Arrays.fill(brainResults, 0);
+
+            //iterate brains on dataset and sum results
+            for (int d = 0; d < validationRepeat; d++) {
+                for (int i = 0; i < input.length; i++) {
+                    input[i] = random.nextBoolean() ? 1f : -1f;
+                    negatedInput[i] = input[i] * -1;
+                }
+
+                for (int b = 0; b < brainPool.length; b++) {
+                    Brain brain = brainPool[b];
+                    brain.setInput(input);
+                    brain.calculate(output);
+
+                    int matched = 0;
+                    for (int r = 0; r < input.length; r++) {
+                        if (negatedInput[r] == output[r]) {
+                            matched++;
+                        }
+                    }
+                    brainResults[b] += matched;
+                }
+            }
+
+            //find 1 best result
+            int bestIndex = 0;
+            float bestResult = 0;
+            for (int b = 0; b < brainResults.length; b++) {
+                int avgResult = brainResults[b];
+                if (avgResult >= bestResult) {
+                    bestIndex = b;
+                    bestResult = avgResult;
+                    float avg = bestResult / validationRepeat;
+                    if (avg > bestGlobalResult) {
+                        bestGlobalResult = avg;
+                    }
+                }
+            }
+            resultSum += bestResult / validationRepeat;
+
+
+            //second best
+            int secondBestIndex = 0;
+            int secondBestResult = 0;
+            for (int b = 0; b < brainResults.length; b++) {
+                if (b == bestIndex) continue;
+
+                int avgResult = brainResults[b];
+                if (avgResult > secondBestResult) {
+                    secondBestIndex = b;
+                    secondBestResult = avgResult;
+                }
+            }
+
+            Brain bestBrain = brainPool[bestIndex];
+            Brain secondBestBrain = brainPool[secondBestIndex];
+
+            //swap
+            brainPool = (brainPool == cache1) ? cache2 : cache1;
+            for (int b = 0; b < brainPool.length; b++) {
+                if (bestIndex == b) {
+                    brainPool[b] = bestBrain;
+                    continue;
+                }
+                if (secondBestIndex == b) {
+                    brainPool[b] = secondBestBrain;
+                    continue;
+                }
+
+//                brainPool[b] = template.branchDestination(brainPool[b])
+//                        .produceChildUnsafe(bestBrain, secondBestBrain, 1, 1);
+
+                template.branchDestination(brainPool[b])
+//                        .copy(bestBrain, REVERSE_IO_COUNT * 3, bestGlobalResult * 2); //the closer to the goal - the less mutation
+                        .copy(bestBrain, 2, 1);
+            }
+
+            int iterationSkip = 2500;
+            if (iteration % iterationSkip == 0) {
+                System.out.println("[test iterate] Best so far: " + bestGlobalResult + " avg: " + resultSum / iterationSkip + " best: " + bestResult / validationRepeat);
+                resultSum = 0;
+            }
+
+            iteration++;
         }
         long end = System.currentTimeMillis();
         return (end - start);
