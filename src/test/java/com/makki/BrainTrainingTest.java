@@ -11,7 +11,7 @@ import java.util.Random;
 public class BrainTrainingTest {
 
     private static final int REVERSE_BRAIN_COUNT = 30;
-    private static final int REVERSE_IO_COUNT = 4;
+    private static final int REVERSE_IO_COUNT = 12;
     private static final int REVERSE_L2_COUNT = REVERSE_IO_COUNT;
     private static final int REVERSE_L3_COUNT = REVERSE_IO_COUNT;
     private static final int REVERSE_L4_COUNT = REVERSE_IO_COUNT;

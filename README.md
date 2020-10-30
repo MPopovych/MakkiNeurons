@@ -6,7 +6,7 @@ A simple java library to work with neural networks. Current implementation is ba
 For references - check tests.
 Project is under development, so changes will come.
 
-### Usage
+### Brain creation
 
 ``` java
 BrainBuilder template = BrainBuilder.builder()
@@ -23,6 +23,38 @@ String signature = BrainInstanceManager.getSignature(brain); //String can be sav
 
 Brain target = template.build();
 BrainInstanceManager.loadFromSignature(signature, target); // and loaded from string, use a template with the same configuration
+
+```
+
+### Brain usage
+
+Check BrainTraining test, where two goals are achieved:
+1. Bruteforce and invert one set of values
+2. Train a brain to invert all input values like 1 and -1. There are not that many optimal solution for this task,
+one of which is to have a zeroed weight matrix with '-1' weights placed diagonally.
+
+``` java
+
+BrainBuilder template = BrainBuilder.builder()
+            .setFunction(new ReLuFunction())
+            .setInitialSupply(RandomRangeSupplier.INSTANCE)
+            .addLayer(54)
+            .addLayer(30)
+            .addLayer(20);
+
+Brain brain = template.build();
+float[] input = new float[54];
+
+for (int i = 0; i < 54; i++) {
+    input[i] = RandomSupplier.INSTANCE.supply(0, 0);
+}
+
+brain.setInput(input);
+float[] result = brainSource.calculate();
+
+// or allocation friendly option
+float[] alloc = new float[20]; 
+brainSource.calculate(alloc);
 
 ```
 

@@ -42,7 +42,7 @@ public class BrainInstanceTest {
 
         float[] input = new float[54];
 
-        for (int i = 0; i < 53; i++) {
+        for (int i = 0; i < 54; i++) {
             input[i] = RandomSupplier.INSTANCE.supply(0, 0);
         }
 
