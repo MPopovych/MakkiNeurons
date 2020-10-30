@@ -90,7 +90,7 @@ public class BrainInstanceManager {
         return Base64.getEncoder().encodeToString(buff.array());
     }
 
-    public static Brain loadFromSignature(String signature) {
+    public static Brain loadFromSignature(String signature, Brain brain) {
         ByteBuffer buff = ByteBuffer.wrap(Base64.getDecoder().decode(signature));
 
         int structureSize = buff.getInt(); // STRUCTURE SIZE
@@ -98,10 +98,6 @@ public class BrainInstanceManager {
         for (int i = 0; i < structureSize; i++) {
             structure[i] = buff.getInt(); // STRUCTURE ELEMENTS
         }
-
-        Brain brain = BrainBuilder.builder()
-                .setStructure(structure)
-                .build();
 
         int layerIndex = 0;
         while (buff.hasRemaining()) {

@@ -15,7 +15,7 @@ public class BrainBranchBuilderTest {
     public void testBranchCopy() {
         BrainBuilder brainBuilder = BrainBuilder.builder()
                 .setFunction(Functions.LeReLu)
-                .setSupplier(RandomRangeSupplier.INSTANCE)
+                .setInitialSupply(RandomRangeSupplier.INSTANCE)
                 .addLayer(54)
                 .addLayer(40)
                 .addLayer(80)
@@ -62,7 +62,7 @@ public class BrainBranchBuilderTest {
     public void testBranchBreeding() {
         BrainBuilder brainBuilder = BrainBuilder.builder()
                 .setFunction(new ReLuFunction())
-                .setSupplier(RandomRangeSupplier.INSTANCE)
+                .setInitialSupply(RandomRangeSupplier.INSTANCE)
                 .addLayer(54)
                 .addLayer(40)
                 .addLayer(80)

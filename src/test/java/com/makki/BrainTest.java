@@ -19,7 +19,7 @@ public class BrainTest {
 
         BrainBuilder brainBuilder = BrainBuilder.builder()
                 .setFunction(new ReLuFunction())
-                .setSupplier(RandomRangeSupplier.INSTANCE);
+                .setInitialSupply(RandomRangeSupplier.INSTANCE);
 
         for (int count : structureRef) {
             brainBuilder.addLayer(count);
@@ -71,7 +71,7 @@ public class BrainTest {
 
         Brain brain = BrainBuilder.builder()
                 .setFunction(new ReLuFunction())
-                .setSupplier(RandomRangeSupplier.INSTANCE)
+                .setInitialSupply(RandomRangeSupplier.INSTANCE)
                 .addLayer(53)
                 .addLayer(200)
                 .addLayer(80)
@@ -106,7 +106,7 @@ public class BrainTest {
 
         Brain brain = BrainBuilder.builder()
                 .setFunction(new ReLuFunction())
-                .setSupplier(RandomRangeSupplier.INSTANCE)
+                .setInitialSupply(RandomRangeSupplier.INSTANCE)
                 .addLayer(53)
                 .addLayer(200)
                 .addLayer(80)
@@ -143,10 +143,10 @@ public class BrainTest {
                 .addLayer(2);
 
         Brain brain1 = brainBuilder
-                .setSupplier(new SingleValueSupplier(3))
+                .setInitialSupply(new SingleValueSupplier(3))
                 .build();
         Brain brain2 = brainBuilder
-                .setSupplier(new SingleValueSupplier(4))
+                .setInitialSupply(new SingleValueSupplier(4))
                 .build();
 
         int[] struct1 = brain1.getStructure();
@@ -186,7 +186,7 @@ public class BrainTest {
 
         BrainBuilder brainBuilder = BrainBuilder.builder()
                 .setFunction(new ReLuFunction())
-                .setSupplier(RandomRangeSupplier.INSTANCE)
+                .setInitialSupply(RandomRangeSupplier.INSTANCE)
                 .addLayer(53)
                 .addLayer(50)
                 .addLayer(50)

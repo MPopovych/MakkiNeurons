@@ -13,9 +13,9 @@ public class Brain {
     private final ValueSupplier supplier;
     private BrainLayer[] brainLayers = new BrainLayer[0];
 
-    Brain(BrainFunction function, ValueSupplier supplier) {
+    Brain(BrainFunction function, ValueSupplier baseSupplier) {
         this.function = function;
-        this.supplier = supplier;
+        this.supplier = baseSupplier;
     }
 
     public int[] getStructure() {
@@ -48,10 +48,18 @@ public class Brain {
     }
 
     void append(int count) {
-        append(count, null);
+        append(count, null, null);
     }
 
-    void append(int count, ValueSupplier bSupplier) {
+    void append(int count, ValueSupplier supplier) {
+        append(count, supplier, null);
+    }
+
+    void appendBias(int count, ValueSupplier biasSupplier) {
+        append(count, null, biasSupplier);
+    }
+
+    void append(int count, ValueSupplier supplier, ValueSupplier bSupplier) {
         layerCount++;
 
         BrainLayer weightLayer = null;

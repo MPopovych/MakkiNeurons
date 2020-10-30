@@ -17,9 +17,9 @@ public class BenchmarkTest {
 
         Brain brain = new Brain(function, supplier);
         brain.append(100);
-        brain.append(150, supplier);
-        brain.append(200, supplier);
-        brain.append(40, supplier);
+        brain.appendBias(150, supplier);
+        brain.appendBias(200, supplier);
+        brain.appendBias(40, supplier);
         brain.append(45);
 
         float[] input1 = new float[100];
@@ -44,9 +44,9 @@ public class BenchmarkTest {
 
         Brain brain = new Brain(function, supplier);
         brain.append(4);
-        brain.append(8000, supplier);
-        brain.append(8000, supplier);
-        brain.append(8000, supplier);
+        brain.appendBias(8000, supplier);
+        brain.appendBias(8000, supplier);
+        brain.appendBias(8000, supplier);
         brain.append(2);
 
         float[] input1 = new float[]{0, 0, 0, 0};

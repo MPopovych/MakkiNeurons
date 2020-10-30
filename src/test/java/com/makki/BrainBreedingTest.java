@@ -14,7 +14,7 @@ public class BrainBreedingTest {
 	public void testBreeding() {
 		BrainBuilder brainBuilder = BrainBuilder.builder()
 				.setFunction(new ReLuFunction())
-				.setSupplier(RandomRangeSupplier.INSTANCE)
+				.setInitialSupply(RandomRangeSupplier.INSTANCE)
 				.addLayer(54)
 				.addLayer(60)
 				.addLayer(40);
@@ -46,7 +46,7 @@ public class BrainBreedingTest {
 	public void testBreedingMutation() {
 		BrainBuilder brainBuilder = BrainBuilder.builder()
 				.setFunction(new ReLuFunction())
-				.setSupplier(RandomRangeSupplier.INSTANCE)
+				.setInitialSupply(RandomRangeSupplier.INSTANCE)
 				.addLayer(54)
 				.addLayer(60)
 				.addLayer(40);
@@ -86,7 +86,7 @@ public class BrainBreedingTest {
 	public void testCopy() {
 		BrainBuilder brainBuilder = BrainBuilder.builder()
 				.setFunction(new ReLuFunction())
-				.setSupplier(RandomRangeSupplier.INSTANCE)
+				.setInitialSupply(RandomRangeSupplier.INSTANCE)
 				.addLayer(54)
 				.addLayer(60)
 				.addLayer(40);
@@ -113,7 +113,7 @@ public class BrainBreedingTest {
 	public void testCopyMutation() {
 		BrainBuilder brainBuilder = BrainBuilder.builder()
 				.setFunction(new ReLuFunction())
-				.setSupplier(RandomRangeSupplier.INSTANCE)
+				.setInitialSupply(RandomRangeSupplier.INSTANCE)
 				.addLayer(54)
 				.addLayer(60)
 				.addLayer(40);

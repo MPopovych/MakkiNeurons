@@ -1,9 +1,8 @@
 package com.makki;
 
 import com.makki.functions.Functions;
-import com.makki.suppliers.RandomNegPosSupplier;
 import com.makki.suppliers.RandomNegZeroPosSupplier;
-import com.makki.suppliers.RandomRangeSupplier;
+import com.makki.suppliers.ZeroSupplier;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -11,7 +10,7 @@ import java.util.Random;
 
 public class BrainTrainingTest {
 
-    private static final int REVERSE_BRAIN_COUNT = 10;
+    private static final int REVERSE_BRAIN_COUNT = 30;
     private static final int REVERSE_IO_COUNT = 4;
     private static final int REVERSE_L2_COUNT = REVERSE_IO_COUNT;
     private static final int REVERSE_L3_COUNT = REVERSE_IO_COUNT;
@@ -35,6 +34,21 @@ public class BrainTrainingTest {
         System.out.println("[testReverse] Elapsed time: " + (end - start) + "ms.");
     }
 
+
+    @Test
+    public void testReverseDataSet() {
+        int testCount = REVERSE_TEST_COUNT;
+        long total = 0;
+
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < testCount; i++) {
+            total += testReverseDataSetOnce();
+        }
+        long end = System.currentTimeMillis();
+        System.out.println("[testReverseOnce] Avg time: " + total / testCount + "ms.");
+        System.out.println("[testReverse] Elapsed time: " + (end - start) + "ms.");
+    }
+
     public long testReverseOnce() {
         Random random = new Random(System.currentTimeMillis());
         Brain[] brainPool = new Brain[REVERSE_BRAIN_COUNT];
@@ -43,8 +57,8 @@ public class BrainTrainingTest {
         BrainBuilder template = BrainBuilder.builder()
                 .setFunction(Functions.NegZeroPos)
                 .addLayer(REVERSE_IO_COUNT)
-                .addLayer(REVERSE_L2_COUNT, RandomNegZeroPosSupplier.INSTANCE)
-                .addLayer(REVERSE_L3_COUNT, RandomNegZeroPosSupplier.INSTANCE)
+                .addLayerBias(REVERSE_L2_COUNT, RandomNegZeroPosSupplier.INSTANCE)
+                .addLayerBias(REVERSE_L3_COUNT, RandomNegZeroPosSupplier.INSTANCE)
                 .addLayer(REVERSE_L4_COUNT)
                 .addLayer(REVERSE_IO_COUNT);
 
@@ -105,7 +119,6 @@ public class BrainTrainingTest {
 
                 template.branchDestination(brainPool[b])
                         .copy(bestBrain, REVERSE_IO_COUNT, bestGlobalResult); //the closer to the goal - the less mutation
-//                        .copy(bestBrain, 3, 4);
                 if (secondBestIndex != b) {
                     lastNotBest = b;
                 }
@@ -122,20 +135,6 @@ public class BrainTrainingTest {
         return (end - start);
     }
 
-    @Test
-    public void testReverseDataSet() {
-        int testCount = REVERSE_TEST_COUNT;
-        long total = 0;
-
-        long start = System.currentTimeMillis();
-        for (int i = 0; i < testCount; i++) {
-            total += testReverseDataSetOnce();
-        }
-        long end = System.currentTimeMillis();
-        System.out.println("[testReverseOnce] Avg time: " + total / testCount + "ms.");
-        System.out.println("[testReverse] Elapsed time: " + (end - start) + "ms.");
-    }
-
     public long testReverseDataSetOnce() {
         Random random = new Random(System.currentTimeMillis());
         Brain[] brainPool = new Brain[REVERSE_BRAIN_COUNT];
@@ -145,12 +144,11 @@ public class BrainTrainingTest {
         int[] brainResults = new int[REVERSE_BRAIN_COUNT];
 
         BrainBuilder template = BrainBuilder.builder()
-                .setSupplier(RandomNegZeroPosSupplier.INSTANCE)
                 .setFunction(Functions.NegZeroPos)
+                .setInitialSupply(ZeroSupplier.INSTANCE)
+//                .setInitialSupply(RandomNegZeroPosSupplier.INSTANCE) // this should take a little bit longer
+                .setMutationSupply(RandomNegZeroPosSupplier.INSTANCE)
                 .addLayer(REVERSE_IO_COUNT)
-//                .addLayer(REVERSE_L2_COUNT, RandomRangeSupplier.INSTANCE)
-//                .addLayer(REVERSE_L3_COUNT, RandomRangeSupplier.INSTANCE)
-//                .addLayer(REVERSE_L4_COUNT)
                 .addLayer(REVERSE_IO_COUNT);
 
         for (int i = 0; i < brainPool.length; i++) {
@@ -236,6 +234,10 @@ public class BrainTrainingTest {
             Brain bestBrain = brainPool[bestIndex];
             Brain secondBestBrain = brainPool[secondBestIndex];
 
+            if (bestResult / validationRepeat == REVERSE_IO_COUNT) {
+                bestBrain.getWeightLayer(0).print();
+            }
+
             //swap
             brainPool = (brainPool == cache1) ? cache2 : cache1;
             for (int b = 0; b < brainPool.length; b++) {
@@ -247,9 +249,6 @@ public class BrainTrainingTest {
                     brainPool[b] = secondBestBrain;
                     continue;
                 }
-
-//                brainPool[b] = template.branchDestination(brainPool[b])
-//                        .produceChildUnsafe(bestBrain, secondBestBrain, 1, 1);
 
                 template.branchDestination(brainPool[b])
 //                        .copy(bestBrain, REVERSE_IO_COUNT * 3, bestGlobalResult * 2); //the closer to the goal - the less mutation

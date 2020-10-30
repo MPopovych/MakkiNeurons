@@ -1,7 +1,7 @@
 package com.makki;
 
 import com.makki.functions.BrainFunction;
-import com.makki.functions.ReLuFunction;
+import com.makki.functions.Functions;
 import com.makki.suppliers.RandomRangeSupplier;
 import com.makki.suppliers.ValueSupplier;
 import com.makki.suppliers.ZeroSupplier;
@@ -13,13 +13,18 @@ public class BrainBuilder {
 	private final Random random = new Random(System.currentTimeMillis());
 
 	private int[] structure;
+	private BrainFunction[] func_structure;
+	private ValueSupplier[] init_structure;
 	private ValueSupplier[] bias_structure;
 
-	private BrainFunction function = new ReLuFunction();
-	private ValueSupplier supplier = RandomRangeSupplier.INSTANCE;
+	private BrainFunction function = Functions.LeReLu;
+	private ValueSupplier initialSupply = ZeroSupplier.INSTANCE;
+	private ValueSupplier mutateSupply = RandomRangeSupplier.INSTANCE;
 
 	private BrainBuilder() {
 		structure = new int[0];
+		func_structure = new BrainFunction[0];
+		init_structure = new ValueSupplier[0];
 		bias_structure = new ValueSupplier[0];
 	}
 
@@ -28,17 +33,56 @@ public class BrainBuilder {
 	}
 
 	public BrainBuilder addLayer(int count) {
-		return addLayer(count, null);
+		return addLayer(count, null, null, null);
 	}
 
-	public BrainBuilder addLayer(int count, ValueSupplier biasSupplier) {
+	public BrainBuilder addLayer(int count, BrainFunction function) {
+		return addLayer(count, function, null, null);
+	}
+
+	public BrainBuilder addLayerBias(int count, ValueSupplier biasSupplier) {
+		return addLayer(count, null, null, biasSupplier);
+	}
+
+	public BrainBuilder addLayerWeight(int count, ValueSupplier supplier) {
+		return addLayer(count, null, supplier, null);
+	}
+
+	public BrainBuilder addLayer(int count, ValueSupplier supplier, ValueSupplier biasSupplier) {
+		return addLayer(count, null, supplier, biasSupplier);
+	}
+
+	/**
+	 * @param count size of layer
+	 * @param function activation function for that specific layer, may be null, will take general function
+	 * @param supplier weight value source on creation, may be null, will take general supply
+	 * @param biasSupplier bias source on creation, may be null, then the array wont initialise
+	 * @return this builder
+	 */
+	public BrainBuilder addLayer(int count, BrainFunction function, ValueSupplier supplier, ValueSupplier biasSupplier) {
 		int newSize = structure.length + 1;
+
+		if (count <= 0) {
+			throw new IllegalStateException("Layer count cannot be zero or less");
+		}
 
 		// STRUCTURE
 		int[] oldArray = structure;
 		structure = new int[newSize];
 		System.arraycopy(oldArray, 0, structure, 0, oldArray.length);
 		structure[newSize - 1] = count;
+
+		// FUNCTIONS
+		BrainFunction[] oldFuncArray = func_structure;
+		func_structure = new BrainFunction[newSize];
+		System.arraycopy(oldFuncArray, 0, func_structure, 0, oldFuncArray.length);
+		func_structure[newSize - 1] = function == null ? this.function : function;
+
+		// INIT
+		ValueSupplier[] oldInitArray = init_structure;
+		init_structure = new ValueSupplier[newSize];
+		System.arraycopy(oldInitArray, 0, init_structure, 0, oldInitArray.length);
+		init_structure[newSize - 1] = supplier == null ? this.initialSupply : supplier;
 
 		// BIASES
 		ValueSupplier[] oldBiasArray = bias_structure;
@@ -49,17 +93,30 @@ public class BrainBuilder {
 		return this;
 	}
 
-	public BrainBuilder setStructure(int[] structure) {
+	private BrainBuilder setStructure(int[] structure) {
 		this.structure = structure;
-		if (structure.length != bias_structure.length) {
-			this.setBiasStructure(new ValueSupplier[structure.length]);
+		return this;
+	}
+
+	private BrainBuilder setFuncStructure(BrainFunction[] structure) {
+		this.func_structure = structure;
+		if (func_structure.length != this.structure.length) {
+			throw new IllegalStateException("Mismatch in func structure");
 		}
 		return this;
 	}
 
-	public BrainBuilder setBiasStructure(ValueSupplier[] structure) {
+	private BrainBuilder setInitStructure(ValueSupplier[] structure) {
+		this.init_structure = structure;
+		if (init_structure.length != this.structure.length) {
+			throw new IllegalStateException("Mismatch in init structure");
+		}
+		return this;
+	}
+
+	private BrainBuilder setBiasStructure(ValueSupplier[] structure) {
 		this.bias_structure = structure;
-		if (this.structure.length != bias_structure.length) {
+		if (bias_structure.length != this.structure.length) {
 			throw new IllegalStateException("Mismatch in bias structure");
 		}
 		return this;
@@ -70,37 +127,54 @@ public class BrainBuilder {
 		return this;
 	}
 
-	public BrainBuilder setSupplier(ValueSupplier supplier) {
-		this.supplier = supplier;
+	/**
+	 * @param initialSupply When appending the layer, if supply is not used - this one will be used
+	 * @return this builder
+	 */
+	public BrainBuilder setInitialSupply(ValueSupplier initialSupply) {
+		this.initialSupply = initialSupply;
+		return this;
+	}
+
+	/**
+	 * @param mutateSupply When mutation the brain values from this one source will be used
+	 * @return this builder
+	 */
+	public BrainBuilder setMutationSupply(ValueSupplier mutateSupply) {
+		this.mutateSupply = mutateSupply;
 		return this;
 	}
 
 	public BrainBuilder branchDestination(Brain destination) {
-		BrainBuilder branch = new DestinationBuilder(destination);
-		branch.setFunction(this.function);
-		branch.setSupplier(this.supplier);
-		branch.setStructure(this.structure);
-		branch.setBiasStructure(this.bias_structure);
-		return branch;
+		return new DestinationBuilder(destination)
+				.setInitialSupply(this.initialSupply)
+				.setMutationSupply(this.mutateSupply)
+				.setFunction(this.function)
+				.setStructure(this.structure)
+				.setFuncStructure(this.func_structure)
+				.setInitStructure(this.init_structure)
+				.setBiasStructure(this.bias_structure);
 	}
 
 	public Brain build() {
-		return build(this.supplier);
+		return build(ZeroSupplier.INSTANCE); // to avoid iterating on random sources
 	}
 
-	private Brain build(ValueSupplier supplier) {
-		Brain brain = new Brain(this.function, supplier);
+	private Brain build(ValueSupplier init) {
+		ValueSupplier initial = init == null ? this.initialSupply : init;
+		Brain brain = new Brain(this.function, initial);
 		for (int i = 0; i < structure.length; i++) {
 			int count = structure[i];
+			ValueSupplier initSupplier = init_structure[i];
 			ValueSupplier biasSupplier = bias_structure[i];
-			brain.append(count, biasSupplier);
+			brain.append(count, initSupplier, biasSupplier);
 		}
 
 		return brain;
 	}
 
 	protected Brain createNewOrFromExtension() {
-		return build(ZeroSupplier.INSTANCE);
+		return build();
 	}
 
 	public Brain produceChildUnsafe(Brain parent1, Brain parent2) {
@@ -306,7 +380,7 @@ public class BrainBuilder {
 			for (int j = 0; j < count; j++) {
 				int x = random.nextInt(layer.getWidth());
 				int y = random.nextInt(layer.getHeight());
-				layer.values[x][y] = supplier.supply(x, y);
+				layer.values[x][y] = mutateSupply.supply(x, y);
 			}
 		}
 
@@ -322,7 +396,7 @@ public class BrainBuilder {
 			for (int j = 0; j < count; j++) {
 				int x = random.nextInt(layer.getWidth());
 				int y = random.nextInt(layer.getHeight());
-				layer.bias[x][y] = supplier.supply(x, y);
+				layer.bias[x][y] = mutateSupply.supply(x, y);
 			}
 		}
 		return brain;

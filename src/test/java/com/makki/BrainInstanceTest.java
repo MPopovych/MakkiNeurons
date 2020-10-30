@@ -12,22 +12,23 @@ public class BrainInstanceTest {
 
     @Test
     public void testSave() {
-        Brain brainSource = BrainBuilder.builder()
+        BrainBuilder template = BrainBuilder.builder()
                 .setFunction(new ReLuFunction())
-                .setSupplier(RandomRangeSupplier.INSTANCE)
+                .setInitialSupply(RandomRangeSupplier.INSTANCE)
                 .addLayer(54)
                 .addLayer(40)
                 .addLayer(80)
                 .addLayer(60)
-                .addLayer(40)
-                .build();
+                .addLayer(40);
+        Brain brainSource = template.build();
+        Brain brainResult = template.build();
 
         String signature1 = BrainInstanceManager.getSignature(brainSource);
         Assert.assertFalse(signature1.isEmpty());
 
 //        System.out.println("SIGNATURE: " + signature1);
 
-        Brain brainResult = BrainInstanceManager.loadFromSignature(signature1);
+        BrainInstanceManager.loadFromSignature(signature1, brainResult);
         String signature2 = BrainInstanceManager.getSignature(brainResult);
 
         Assert.assertEquals(signature1, signature2);
@@ -60,22 +61,23 @@ public class BrainInstanceTest {
 
     @Test
     public void testSaveBiases() {
-        Brain brainSource = BrainBuilder.builder()
+        BrainBuilder template = BrainBuilder.builder()
                 .setFunction(new ReLuFunction())
-                .setSupplier(RandomRangeSupplier.INSTANCE)
+                .setInitialSupply(RandomRangeSupplier.INSTANCE)
                 .addLayer(54)
-                .addLayer(40, RandomRangeSupplier.INSTANCE)
-                .addLayer(80, RandomRangeSupplier.INSTANCE)
+                .addLayerBias(40, RandomRangeSupplier.INSTANCE)
+                .addLayerBias(80, RandomRangeSupplier.INSTANCE)
                 .addLayer(60)
-                .addLayer(40)
-                .build();
+                .addLayer(40);
+        Brain brainSource = template.build();
+        Brain brainLoaded = template.build();
 
         String signature1 = BrainInstanceManager.getSignature(brainSource);
         Assert.assertFalse(signature1.isEmpty());
 
         System.out.println("SIGNATURE: " + signature1);
 
-        Brain brainLoaded = BrainInstanceManager.loadFromSignature(signature1);
+        BrainInstanceManager.loadFromSignature(signature1, brainLoaded);
         String signature2 = BrainInstanceManager.getSignature(brainLoaded);
 
         Assert.assertEquals(signature1, signature2);
