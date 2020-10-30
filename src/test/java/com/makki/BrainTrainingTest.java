@@ -59,8 +59,8 @@ public class BrainTrainingTest {
                 .addLayer(REVERSE_IO_COUNT)
                 .addLayerBias(REVERSE_L2_COUNT, RandomNegZeroPosSupplier.INSTANCE)
                 .addLayerBias(REVERSE_L3_COUNT, RandomNegZeroPosSupplier.INSTANCE)
-                .addLayer(REVERSE_L4_COUNT)
-                .addLayer(REVERSE_IO_COUNT);
+                .addLayer(REVERSE_L4_COUNT, Functions.NegPos)
+                .addLayer(REVERSE_IO_COUNT, Functions.NegZeroPos);
 
         for (int i = 0; i < brainPool.length; i++) {
             brainPool[i] = template.build();
@@ -206,7 +206,7 @@ public class BrainTrainingTest {
             float bestResult = 0;
             for (int b = 0; b < brainResults.length; b++) {
                 int avgResult = brainResults[b];
-                if (avgResult >= bestResult) {
+                if (avgResult > bestResult) {
                     bestIndex = b;
                     bestResult = avgResult;
                     float avg = bestResult / validationRepeat;
@@ -225,7 +225,7 @@ public class BrainTrainingTest {
                 if (b == bestIndex) continue;
 
                 int avgResult = brainResults[b];
-                if (avgResult > secondBestResult) {
+                if (avgResult >= secondBestResult) {
                     secondBestIndex = b;
                     secondBestResult = avgResult;
                 }
@@ -252,7 +252,7 @@ public class BrainTrainingTest {
 
                 template.branchDestination(brainPool[b])
 //                        .copy(bestBrain, REVERSE_IO_COUNT * 3, bestGlobalResult * 2); //the closer to the goal - the less mutation
-                        .copy(bestBrain, 2, 1);
+                        .produceChildUnsafe(bestBrain, secondBestBrain, 5, 1);
             }
 
             int iterationSkip = 2500;

@@ -167,7 +167,8 @@ public class BrainBuilder {
 			int count = structure[i];
 			ValueSupplier initSupplier = init_structure[i];
 			ValueSupplier biasSupplier = bias_structure[i];
-			brain.append(count, initSupplier, biasSupplier);
+			BrainFunction function = func_structure[i];
+			brain.append(count, function, initSupplier, biasSupplier);
 		}
 
 		return brain;

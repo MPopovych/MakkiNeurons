@@ -90,13 +90,26 @@ public class BrainInstanceManager {
         return Base64.getEncoder().encodeToString(buff.array());
     }
 
-    public static Brain loadFromSignature(String signature, Brain brain) {
+    public static int[] loadSignature(String signature, Brain brain) {
         ByteBuffer buff = ByteBuffer.wrap(Base64.getDecoder().decode(signature));
 
         int structureSize = buff.getInt(); // STRUCTURE SIZE
         int[] structure = new int[structureSize];
         for (int i = 0; i < structureSize; i++) {
             structure[i] = buff.getInt(); // STRUCTURE ELEMENTS
+        }
+        return structure;
+    }
+
+    public static Brain loadFromSignature(String signature, Brain brain) {
+        ByteBuffer buff = ByteBuffer.wrap(Base64.getDecoder().decode(signature));
+
+        int structureSize = buff.getInt(); // STRUCTURE SIZE
+        int[] brainStructure = brain.getStructure();
+        for (int i = 0; i < structureSize; i++) {
+            if (brainStructure[i] != buff.getInt()) {
+                throw new IllegalStateException("MISMATCH OF STRUCTURE");
+            }; // STRUCTURE ELEMENTS
         }
 
         int layerIndex = 0;

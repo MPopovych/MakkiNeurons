@@ -2,7 +2,6 @@ package com.makki;
 
 import com.makki.functions.BrainFunction;
 import com.makki.suppliers.ValueSupplier;
-import com.makki.suppliers.ZeroSupplier;
 
 public class Brain {
 
@@ -12,6 +11,7 @@ public class Brain {
     private BrainFunction function;
     private final ValueSupplier supplier;
     private BrainLayer[] brainLayers = new BrainLayer[0];
+    private BrainFunction[] functions = new BrainFunction[0];
 
     Brain(BrainFunction function, ValueSupplier baseSupplier) {
         this.function = function;
@@ -48,24 +48,26 @@ public class Brain {
     }
 
     void append(int count) {
-        append(count, null, null);
+        append(count, null, null, null);
     }
 
     void append(int count, ValueSupplier supplier) {
-        append(count, supplier, null);
+        append(count, null, supplier, null);
     }
 
     void appendBias(int count, ValueSupplier biasSupplier) {
-        append(count, null, biasSupplier);
+        append(count,null, null, biasSupplier);
     }
 
-    void append(int count, ValueSupplier supplier, ValueSupplier bSupplier) {
+    void append(int count, BrainFunction function, ValueSupplier supplier, ValueSupplier bSupplier) {
         layerCount++;
+
+        ValueSupplier supply = supplier == null ? this.supplier : supplier;
 
         BrainLayer weightLayer = null;
         if (brainLayers.length > 0) {
             BrainLayer layer = brainLayers[brainLayers.length - 1];
-            weightLayer = new BrainLayer(count, layer.getWidth(), supplier); // weight layer
+            weightLayer = new BrainLayer(count, layer.getWidth(), supply); // weight layer
         }
 
         BrainLayer nextLayer = new BrainLayer(count, 1, null, bSupplier); // hidden layer
@@ -79,6 +81,11 @@ public class Brain {
             brainLayers[oldArray.length] = weightLayer;
         }
         brainLayers[brainLayers.length - 1] = nextLayer;
+
+        BrainFunction[] layers = functions;
+        functions = new BrainFunction[layerCount];
+        System.arraycopy(layers, 0, functions, 0, layers.length);
+        functions[layers.length] = (function == null) ? this.function : function;
     }
 
     BrainFunction getFunction() {
