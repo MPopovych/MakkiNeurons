@@ -150,8 +150,9 @@ public class Brain {
             }
             brainLayers[layer].multiply(brainLayers[weight], target);
 
+            BrainFunction func = functions[i + 1];
             for (int j = 0; j < target.getWidth(); j++) {
-                target.values[j][0] = function.apply(target.values[j][0]);
+                target.values[j][0] = func.apply(target.values[j][0]);
             }
         }
 
